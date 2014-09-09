@@ -38,6 +38,13 @@ namespace exifbatch
                 foreach (System.IO.FileInfo fi in files)
                 {
                     Console.WriteLine(fi.FullName);
+                    string exif_name = ReadNameFile(fi.FullName);
+                    Console.WriteLine("name=" + exif_name);
+                    string exif_desc = ReadDescFile(fi.FullName);
+                    Console.WriteLine("desc=" + exif_name);
+                    Update_Title(fi.FullName, exif_name);
+                    Update_Desc(fi.FullName, exif_desc);
+                    Console.WriteLine(fi.FullName + " update exif done..");
                 }
 
                 subDirs = root.GetDirectories();
@@ -49,28 +56,36 @@ namespace exifbatch
             }
         }
 
-        static void Main(string[] args)
+        static string ReadNameFile(string jpg_file_name)
         {
-            string process_path = null;
-            if (args.Length == 0)
+            string txt_name = jpg_file_name + ".name.txt";
+            return ReadFileContent(txt_name);
+        }
+        static string ReadDescFile(string jpg_file_name)
+        {
+            string txt_name = jpg_file_name + ".desc.txt";
+            return ReadFileContent(txt_name);
+        }
+
+        static string ReadFileContent(string soruce_file)
+        {
+            string file_content = "";
+            if (File.Exists(soruce_file))
             {
-                //no paramter use correct.
-                process_path = Directory.GetCurrentDirectory();
-            } else
-            {
-                process_path = Path.GetFullPath(args[0]);
+                StreamReader sr = new StreamReader(soruce_file, System.Text.Encoding.Default);
+                while (!sr.EndOfStream)
+                {                                       
+                    file_content += sr.ReadLine();      
+                }
+                sr.Close();
             }
-            DirectoryInfo walking_directory = new DirectoryInfo(process_path);
-            WalkDirectoryTree(walking_directory);
+            return file_content;
 
-
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            startInfo.FileName = "cmd.exe";
-            string value = "許重功";
+        }
+        static string Generate_EscStringe(string soruce_string) 
+        {
             StringBuilder sb = new StringBuilder();
-            foreach (char c in value)
+            foreach (char c in soruce_string)
             {
                 if (c > 127)
                 {
@@ -83,13 +98,74 @@ namespace exifbatch
                     sb.Append(c);
                 }
             }
+            return sb.ToString();
+        }
+        static void Update_Title(string file_name, string title)
+        {
+            string esc_title = Generate_EscStringe(title);
+            Update_Exif(file_name, string.Format("-title=\"{0}\"", esc_title));
+        }
 
+        static void Update_Desc(string file_name, string desc)
+        {
+            string esc_desc = Generate_EscStringe(desc);
+            Update_Exif(file_name, string.Format("-description=\"{0}\"", esc_desc));
+        }
 
-            Debug.WriteLine(sb.ToString());
-            startInfo.Arguments = string.Format("/C exiftool.exe -title=\"{0}\" -E test1.jpg", sb.ToString());
-            Debug.WriteLine(startInfo.Arguments);
+        static void Update_Exif(string file_name, string update_command)
+        {
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe"; 
+            startInfo.Arguments = string.Format("/C d:\\exiftool.exe {0} -E {1}", update_command, file_name);
+            Console.WriteLine("cmd =>" + startInfo.Arguments);
             process.StartInfo = startInfo;
             process.Start();
+        }
+
+        static void Main(string[] args)
+        {
+            string process_path = null;
+            if (args.Length == 0)
+            {
+                //no paramter use correct.
+                process_path = Directory.GetCurrentDirectory();
+            }
+            else
+            {
+                process_path = Path.GetFullPath(args[0]);
+            }
+            DirectoryInfo walking_directory = new DirectoryInfo(process_path);
+            WalkDirectoryTree(walking_directory);
+
+
+            //System.Diagnostics.Process process = new System.Diagnostics.Process();
+            //System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            //startInfo.FileName = "cmd.exe";
+            //string value = "許重功";
+            //StringBuilder sb = new StringBuilder();
+            //foreach (char c in value)
+            //{
+            //    if (c > 127)
+            //    {
+            //        // This character is too big for ASCII
+            //        string encodedValue = "&#" + ((int)c).ToString("d") + ";";
+            //        sb.Append(encodedValue);
+            //    }
+            //    else
+            //    {
+            //        sb.Append(c);
+            //    }
+            //}
+
+
+            //Console.WriteLine(sb.ToString());
+            //startInfo.Arguments = string.Format("/C exiftool.exe -title=\"{0}\" -E test1.jpg", sb.ToString());
+            //Console.WriteLine(startInfo.Arguments);
+            //process.StartInfo = startInfo;
+            //process.Start();
         }
     }
 }
