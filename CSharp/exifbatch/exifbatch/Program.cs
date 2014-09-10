@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Threading;
+using Microsoft.VisualBasic.FileIO;
 
 namespace exifbatch
 {
@@ -25,7 +27,7 @@ namespace exifbatch
                 // This code just writes out the message and continues to recurse.
                 // You may decide to do something different here. For example, you
                 // can try to elevate your privileges and access the file again.
-                //log.Add(e.Message);
+                Console.WriteLine(e.Message);
             }
 
             catch (System.IO.DirectoryNotFoundException e)
@@ -37,6 +39,7 @@ namespace exifbatch
             {
                 foreach (System.IO.FileInfo fi in files)
                 {
+                    // Rename Files
                     Console.WriteLine(fi.FullName);
                     string exif_name = ReadNameFile(fi.FullName);
                     Console.WriteLine("name=" + exif_name);
@@ -45,6 +48,7 @@ namespace exifbatch
                     Update_Title(fi.FullName, exif_name);
                     Update_Desc(fi.FullName, exif_desc);
                     Console.WriteLine(fi.FullName + " update exif done..");
+                    Thread.Sleep(50);
                 }
 
                 subDirs = root.GetDirectories();
@@ -53,7 +57,51 @@ namespace exifbatch
                 {
                     WalkDirectoryTree(dirInfo);
                 }
+
+                // Rename folder
+                Thread.Sleep(500);
+                try
+                {
+                    files = root.GetFiles("FOLDER_NAME.TXT");
+                     foreach (System.IO.FileInfo fi in files)
+                     {       
+                         string folder_name = ReadFolderName(fi.FullName);
+
+                         //Remove all text file after modification name.
+                         System.IO.FileInfo[] files_rm = null;
+                         files_rm = root.GetFiles("*.TXT");
+                         foreach (System.IO.FileInfo fi_rm in files_rm)
+                         {
+                             File.Delete(fi_rm.FullName);
+                         }
+                         Thread.Sleep(300);
+
+                         //Remove all original image file.
+                         files_rm = root.GetFiles("*.jpg_original");
+                         foreach (System.IO.FileInfo fi_rm in files_rm)
+                         {
+                             File.Delete(fi_rm.FullName);
+                         }
+                         Thread.Sleep(300);
+                         
+                         if (folder_name.Length > 0)
+                         {
+                             folder_name = folder_name.Trim(new[] { '\\', '*', '/', '?', ':', '>', '<', '|', '"' });
+                             FileSystem.RenameDirectory(root.FullName, folder_name);
+                             Thread.Sleep(1);
+                         }
+                     }
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
+        }
+
+        static string ReadFolderName(string file_path)
+        {
+            return ReadFileContent(file_path);
         }
 
         static string ReadNameFile(string jpg_file_name)
