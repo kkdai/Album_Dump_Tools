@@ -11,7 +11,11 @@ It is a simple dump php to dump all photo, name, description from [4image](http:
 
 
 
- 
+##CSharp
 
- 
+###  Exifbatch
+
+It is a batch helper for [exiftool](http://www.sno.phy.queensu.ca/~phil/exiftool/) in Windows. Because it seems Golang process command line parameter has some problem with it. So I design to switch language on it.
+
+More detail check [it's document](CSharp\exifbatch\README.md).
 
