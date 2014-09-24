@@ -69,12 +69,12 @@ namespace exifbatch
 
                          //Remove all text file after modification name.
                          System.IO.FileInfo[] files_rm = null;
-                         files_rm = root.GetFiles("*.TXT");
-                         foreach (System.IO.FileInfo fi_rm in files_rm)
-                         {
-                             File.Delete(fi_rm.FullName);
-                         }
-                         Thread.Sleep(300);
+                         //files_rm = root.GetFiles("*.TXT");
+                         //foreach (System.IO.FileInfo fi_rm in files_rm)
+                         //{
+                         //    File.Delete(fi_rm.FullName);
+                         //}
+                         //Thread.Sleep(300);
 
                          //Remove all original image file.
                          files_rm = root.GetFiles("*.jpg_original");
@@ -86,7 +86,17 @@ namespace exifbatch
                          
                          if (folder_name.Length > 0)
                          {
-                             folder_name = folder_name.Trim(new[] { '\\', '*', '/', '?', ':', '>', '<', '|', '"' });
+                             //folder_name = folder_name.Trim(new[] { '\\', '*', '/', '?', ':', '>', '<', '|', '"' });
+
+                             folder_name = folder_name.Replace("\\","");
+                             folder_name = folder_name.Replace("*", "");
+                             folder_name = folder_name.Replace("/", "");
+                             folder_name = folder_name.Replace("?", "");
+                             folder_name = folder_name.Replace("<", "");
+                             folder_name = folder_name.Replace(":", "");
+                             folder_name = folder_name.Replace(">", "");
+                             folder_name = folder_name.Replace("\"", "");
+
                              FileSystem.RenameDirectory(root.FullName, folder_name);
                              Thread.Sleep(1);
                          }
