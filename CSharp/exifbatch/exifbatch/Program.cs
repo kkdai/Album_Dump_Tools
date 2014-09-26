@@ -44,7 +44,7 @@ namespace exifbatch
                     string exif_name = ReadNameFile(fi.FullName);
                     Console.WriteLine("name=" + exif_name);
                     string exif_desc = ReadDescFile(fi.FullName);
-                    Console.WriteLine("desc=" + exif_name);
+                    Console.WriteLine("desc=" + exif_desc);
                     Update_Title(fi.FullName, exif_name);
                     Update_Desc(fi.FullName, exif_desc);
                     Console.WriteLine(fi.FullName + " update exif done..");
@@ -86,19 +86,10 @@ namespace exifbatch
                          
                          if (folder_name.Length > 0)
                          {
-                             //folder_name = folder_name.Trim(new[] { '\\', '*', '/', '?', ':', '>', '<', '|', '"' });
-
-                             folder_name = folder_name.Replace("\\","");
-                             folder_name = folder_name.Replace("*", "");
-                             folder_name = folder_name.Replace("/", "");
-                             folder_name = folder_name.Replace("?", "");
-                             folder_name = folder_name.Replace("<", "");
-                             folder_name = folder_name.Replace(":", "");
-                             folder_name = folder_name.Replace(">", "");
-                             folder_name = folder_name.Replace("\"", "");
-
+                             folder_name = RemoveInvalidCharInPath(folder_name);
                              FileSystem.RenameDirectory(root.FullName, folder_name);
-                             Thread.Sleep(1);
+                             //Sleep to avoid CPU overload..
+                             Thread.Sleep(10);
                          }
                      }
                 }
@@ -107,6 +98,20 @@ namespace exifbatch
                     Console.WriteLine(e.Message);
                 }
             }
+        }
+
+        static string RemoveInvalidCharInPath(string ori_path)
+        {
+            string ret_string;
+            ret_string = ori_path.Replace("\\", "");
+            ret_string = ret_string.Replace("*", "");
+            ret_string = ret_string.Replace("/", "");
+            ret_string = ret_string.Replace("?", "");
+            ret_string = ret_string.Replace("<", "");
+            ret_string = ret_string.Replace(":", "");
+            ret_string = ret_string.Replace(">", "");
+            ret_string = ret_string.Replace("\"", "");
+            return ret_string;
         }
 
         static string ReadFolderName(string file_path)
@@ -196,34 +201,6 @@ namespace exifbatch
             }
             DirectoryInfo walking_directory = new DirectoryInfo(process_path);
             WalkDirectoryTree(walking_directory);
-
-
-            //System.Diagnostics.Process process = new System.Diagnostics.Process();
-            //System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-            //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            //startInfo.FileName = "cmd.exe";
-            //string value = "許重功";
-            //StringBuilder sb = new StringBuilder();
-            //foreach (char c in value)
-            //{
-            //    if (c > 127)
-            //    {
-            //        // This character is too big for ASCII
-            //        string encodedValue = "&#" + ((int)c).ToString("d") + ";";
-            //        sb.Append(encodedValue);
-            //    }
-            //    else
-            //    {
-            //        sb.Append(c);
-            //    }
-            //}
-
-
-            //Console.WriteLine(sb.ToString());
-            //startInfo.Arguments = string.Format("/C exiftool.exe -title=\"{0}\" -E test1.jpg", sb.ToString());
-            //Console.WriteLine(startInfo.Arguments);
-            //process.StartInfo = startInfo;
-            //process.Start();
         }
     }
 }
